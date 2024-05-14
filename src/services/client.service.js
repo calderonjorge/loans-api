@@ -56,23 +56,20 @@ async function getPaginatedClients(page = 1, pageSize = 10) {
 
 const getClient = async ({ id }) => {
   try {
-    // const resp = await Client.findOne({ where: { id } })
-
     const clientDetail = await Client.findByPk(id, {
       include: [
         {
           model: Loan,
-          attributes: ['id', 'amount', 'periodicPayments', 'active'], // Incluye solo los atributos necesarios de los préstamos
+          attributes: ['id', 'amount', 'periodicPayments', 'active'],
         },
         {
           model: Client,
-          as: 'Referrer', // Asigna un alias al cliente que lo refirió
-          attributes: ['name', 'phone'], // Incluye solo el nombre y el teléfono del cliente que lo refirió
+          as: 'Referrer',
+          attributes: ['name', 'phone'],
         },
       ],
     })
     return clientDetail
-    // return resp
   } catch (error) {
     console.error(error)
     throw error
