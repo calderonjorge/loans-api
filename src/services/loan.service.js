@@ -53,7 +53,7 @@ const getLoan = async ({ id }) => {
       where: { id },
       include: [
         { model: Client, attributes: ['name', 'phone'] },
-        { model: Payment, attributes: ['paymentDate', 'amountPaid', 'status'] },
+        { model: Payment, attributes: ['paymentDate', 'amountPaid', 'status', 'note'] },
       ],
       attributes: ['id', 'ClientId', 'amount', 'periodicPayments', 'createdAt'],
     })
