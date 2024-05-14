@@ -16,10 +16,31 @@ const create = async ({ amount, ClientId, periodicPayments, active }) => {
   }
 }
 
-const getLoans = async () => {
+const getLoans = async (page = 1, pageSize = 10) => {
   try {
-    const loans = await Loan.findAll()
-    return loans
+    const offset = (page - 1) * pageSize
+    const limit = pageSize
+
+    const { count, rows } = await Loan.findAndCountAll({
+      offset,
+      limit,
+      include: [
+        {
+          model: Client,
+          attributes: ['name'],
+        },
+      ],
+    })
+
+    const totalPages = Math.ceil(count / pageSize)
+
+    return {
+      total: count,
+      currentPage: page,
+      pageSize: pageSize,
+      totalPages: totalPages,
+      loans: rows,
+    }
   } catch (error) {
     console.error('error:', error)
     throw error
