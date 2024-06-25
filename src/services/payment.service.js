@@ -2,6 +2,7 @@ import { Payment } from '../models/index.js'
 
 const create = async ({ ...data }) => {
   try {
+    console.log('loan creation', data)
     const resp = await Payment.create({ ...data })
 
     return resp

@@ -1,7 +1,7 @@
 import authService from '../services/auth.service.js'
 
 export const authController = {
-  async login(req, res) {
+  async login(_, res) {
     try {
       const data = await authService.login()
       res.json(data)

@@ -1,0 +1,19 @@
+meta {
+  name: Create Loan
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://localhost:3000/api/loans
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "amount":"700", 
+    "periodicPayments":"true", 
+    "ClientId":"2"
+  }
+}

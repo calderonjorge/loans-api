@@ -5,22 +5,34 @@ const createClient = async ({ name, phone, referrerId }) => {
   try {
     const resp = await Client.create({ name, phone, referrerId })
 
-    return resp
+    return {
+      activeLoans: 0,
+      id: resp.id,
+      name: resp.name,
+      phone: resp.phone,
+      referrerId: resp.referrerId,
+    }
   } catch (error) {
     console.error('error:', error)
     throw error
   }
 }
 
-async function getPaginatedClients(page = 1, pageSize = 10) {
+async function getPaginatedClients({ page = 1, pageSize = 10 }) {
   const offset = (page - 1) * pageSize
 
   const clientsWithActiveLoanCount = await Client.findAndCountAll({
     attributes: {
       include: [
         [
-          Sequelize.fn('COUNT', Sequelize.literal('CASE WHEN Loans.active = true THEN 1 ELSE NULL END')),
-          'activeLoanCount',
+          Sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM Loans AS Loan
+            WHERE
+              Loan.ClientId = Client.id
+              AND Loan.status = 'active'
+          )`),
+          'activeLoans',
         ],
       ],
     },
@@ -28,30 +40,23 @@ async function getPaginatedClients(page = 1, pageSize = 10) {
       {
         model: Loan,
         attributes: [],
-        where: { active: true },
         required: false,
       },
     ],
     group: ['Client.id'],
+    order: [['name', 'ASC']],
     offset: offset,
+    limit: pageSize,
   })
 
-  const formattedClients = clientsWithActiveLoanCount.rows.map(client => ({
-    id: client.id,
-    name: client.name,
-    phone: client.phone,
-    activeLoanCount: parseInt(client.getDataValue('activeLoanCount') || 0),
-  }))
-
-  const totalPages = Math.ceil(clientsWithActiveLoanCount.count.length / pageSize)
-
-  return {
-    totalClients: clientsWithActiveLoanCount.count.length,
+  const paginatedClients = {
+    totalClients: clientsWithActiveLoanCount.count.length, // Total de clientes sin paginar
+    totalPages: Math.ceil(clientsWithActiveLoanCount.count.length / pageSize), // Total de páginas
     currentPage: page,
-    pageSize: pageSize,
-    totalPages: totalPages,
-    clients: formattedClients,
+    clients: clientsWithActiveLoanCount.rows,
   }
+
+  return paginatedClients
 }
 
 const getClient = async ({ id }) => {
@@ -60,7 +65,7 @@ const getClient = async ({ id }) => {
       include: [
         {
           model: Loan,
-          attributes: ['id', 'amount', 'periodicPayments', 'active'],
+          attributes: ['id', 'amount', 'startDate', 'status'],
         },
         {
           model: Client,
@@ -69,9 +74,53 @@ const getClient = async ({ id }) => {
         },
       ],
     })
+
     return clientDetail
   } catch (error) {
     console.error(error)
+    throw error
+  }
+}
+
+const updateClient = async ({ id, name, phone, referrerId }) => {
+  try {
+    const updatedFields = { name, phone: '', referrerId: '' }
+    if (phone) updatedFields.phone = phone
+    if (referrerId) updatedFields.referrerId = referrerId
+
+    const [rowsUpdated] = await Client.update(updatedFields, {
+      where: { id },
+    })
+
+    if (rowsUpdated === 0) {
+      throw new Error('Client not found or no changes made')
+    }
+
+    const updatedClient = await Client.findByPk(id, {
+      attributes: {
+        include: [
+          [
+            Sequelize.fn(
+              'COUNT',
+              Sequelize.literal('CASE WHEN Loans.status = \'active\' THEN 1 ELSE NULL END'),
+            ),
+            'activeLoanCount',
+          ],
+        ],
+      },
+      include: [
+        {
+          model: Loan,
+          attributes: [],
+          where: { status: 'active' },
+          required: false,
+        },
+      ],
+    })
+
+    return updatedClient
+  } catch (error) {
+    console.error('Error updating client:', error)
     throw error
   }
 }
@@ -80,4 +129,5 @@ export const service = {
   create: createClient,
   getClient,
   getClients: getPaginatedClients,
+  update: updateClient,
 }

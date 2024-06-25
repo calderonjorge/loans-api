@@ -20,13 +20,26 @@ export const Loan = db.define('Loan', {
     type: DataTypes.BOOLEAN,
     allowNull: false,
   },
+  status: {
+    type: DataTypes.ENUM,
+    values: ['pending', 'liquidated'],
+    allowNull: false,
+    defaultValue: 'pending',
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   startDate: {
     type: DataTypes.DATE,
     allowNull: false,
   },
-  active: {
-    type: DataTypes.BOOLEAN,
+  endDate: {
+    type: DataTypes.DATE,
     allowNull: false,
-    defaultValue: true,
-  }
+  },
+  percentage: {
+    type: DataTypes.NUMBER,
+    allowNull: false,
+  },
 })

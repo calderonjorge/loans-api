@@ -1,30 +1,29 @@
 import { Loan, Client, Payment } from '../models/index.js'
 
-const create = async ({ amount, ClientId, periodicPayments, active, startDate }) => {
+const create = async ({
+  amount,
+  clientId,
+  periodicPayments,
+  status = 'active',
+  description,
+  startDate,
+  endDate,
+  percentage,
+}) => {
   try {
     const resp = await Loan.create({
       amount,
       periodicPayments,
-      ClientId,
-      active,
-      startDate
+      ClientId: clientId,
+      status,
+      description,
+      startDate,
+      endDate,
+      percentage,
     })
 
-    return resp
-  } catch (error) {
-    console.error('error:', error)
-    throw error
-  }
-}
-
-const getLoans = async (page = 1, pageSize = 10) => {
-  try {
-    const offset = (page - 1) * pageSize
-    const limit = pageSize
-
-    const { count, rows } = await Loan.findAndCountAll({
-      offset,
-      limit,
+    const loan = await Loan.findOne({
+      where: resp.id,
       include: [
         {
           model: Client,
@@ -33,15 +32,28 @@ const getLoans = async (page = 1, pageSize = 10) => {
       ],
     })
 
-    const totalPages = Math.ceil(count / pageSize)
+    return loan
+  } catch (error) {
+    console.error('error:', error)
+    throw error
+  }
+}
 
-    return {
-      total: count,
-      currentPage: page,
-      pageSize: pageSize,
-      totalPages: totalPages,
-      loans: rows,
-    }
+const getLoans = async () => {
+  try {
+    const loans = await Loan.findAll({
+      include: [
+        {
+          model: Client,
+          attributes: ['name'],
+        },
+      ],
+      order: [
+        // ['status', 'DESC'], // Ordenar por 'active' (activos primero) TODO: CHECAR con el nuevo ordenamiento
+        ['startDate', 'DESC'],
+      ],
+    })
+    return loans
   } catch (error) {
     console.error('error:', error)
     throw error
@@ -53,10 +65,19 @@ const getLoan = async ({ id }) => {
     const loanDetails = await Loan.findOne({
       where: { id },
       include: [
-        { model: Client, attributes: ['name', 'phone'] },
-        { model: Payment, attributes: ['paymentDate', 'amountPaid', 'status', 'note'] },
+        { model: Client, attributes: ['name', 'phone', 'id'] },
+        { model: Payment, attributes: ['paymentDate', 'amountToPay', 'status', 'id'] },
       ],
-      attributes: ['id', 'ClientId', 'amount', 'periodicPayments', 'createdAt'],
+      attributes: [
+        'id',
+        'amount',
+        'periodicPayments',
+        'status',
+        'description',
+        'startDate',
+        'endDate',
+        'percentage',
+      ],
     })
 
     return loanDetails

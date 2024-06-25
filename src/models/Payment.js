@@ -20,11 +20,14 @@ export const Payment = db.define('Payment', {
     type: DataTypes.DATE,
     allowNull: true,
   },
-  amountPaid: {
+  amountToPay: {
     type: DataTypes.REAL,
   },
   status: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.ENUM,
+    values: ['active', 'liquidated', 'cancelled'],
+    allowNull: false,
+    defaultValue: 'active',
   },
   note: {
     type: DataTypes.TEXT,
