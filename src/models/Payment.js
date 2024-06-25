@@ -13,11 +13,11 @@ export const Payment = db.define('Payment', {
     },
   },
   paymentDate: {
-    type: DataTypes.TEXT,
+    type: DataTypes.DATE,
     allowNull: false,
   },
   actualPaymentDate: {
-    type: DataTypes.TEXT,
+    type: DataTypes.DATE,
     allowNull: true,
   },
   amountPaid: {

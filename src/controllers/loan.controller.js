@@ -4,8 +4,8 @@ import { service } from '../services/loan.service.js'
 export const controller = {
   async create(req = request, res = response) {
     try {
-      const { amount, ClientId, periodicPayments, active } = req.body
-      const data = await service.create({ amount, ClientId, periodicPayments, active })
+
+      const data = await service.create({ ...req.body })
       res.json(data).status(200)
     } catch (error) {
       console.error(error)

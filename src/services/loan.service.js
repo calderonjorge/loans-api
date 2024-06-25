@@ -1,12 +1,13 @@
 import { Loan, Client, Payment } from '../models/index.js'
 
-const create = async ({ amount, ClientId, periodicPayments, active }) => {
+const create = async ({ amount, ClientId, periodicPayments, active, startDate }) => {
   try {
     const resp = await Loan.create({
       amount,
       periodicPayments,
       ClientId,
       active,
+      startDate
     })
 
     return resp

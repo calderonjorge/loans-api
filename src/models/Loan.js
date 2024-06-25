@@ -20,9 +20,13 @@ export const Loan = db.define('Loan', {
     type: DataTypes.BOOLEAN,
     allowNull: false,
   },
+  startDate: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
   active: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: true,
-  },
+  }
 })
