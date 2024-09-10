@@ -84,10 +84,11 @@ const getClient = async ({ id }) => {
 
 const updateClient = async ({ id, name, phone, referrerId }) => {
   try {
-    const updatedFields = { name, phone: '', referrerId: '' }
+    const updatedFields = { name }
     if (phone) updatedFields.phone = phone
     if (referrerId) updatedFields.referrerId = referrerId
 
+    console.error(updatedFields)
     const [rowsUpdated] = await Client.update(updatedFields, {
       where: { id },
     })

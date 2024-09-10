@@ -3,3 +3,4 @@ node_modules/
 .github/
 .husky/
 build/
+src/public
